@@ -49,6 +49,7 @@ ENV/
 data/
 data.tar.gz
 train_result/
+._data
 
 # editor, os cache directory
 .vscode/
