@@ -21,7 +21,7 @@ def main(config, config_path):
     # Load datasets
     traindata_dir = config['traindata_dir']
     traindata_info_file = config['traindata_info_file']
-    save_result_path = config['save_result_path']
+    train_result_path = config['train_result_path']
     # 학습 데이터의 class, image path, target에 대한 정보가 들어있는 csv파일을 읽기.
     train_info = pd.read_csv(traindata_info_file)
     # 총 class의 수를 측정.
@@ -86,7 +86,7 @@ def main(config, config_path):
         scheduler=scheduler,
         loss_fn=loss_fn, 
         epochs=config['num_epochs'],
-        result_path=save_result_path,
+        result_path=train_result_path,
         exp_name=config['exp_name'],
         config_path=config_path,
     )
