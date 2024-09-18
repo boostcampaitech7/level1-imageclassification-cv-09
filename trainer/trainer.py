@@ -5,6 +5,7 @@ import torch.optim as optim
 import os
 import shutil
 from tqdm.auto import tqdm
+from torch.utils.tensorboard import SummaryWriter  # 추가: TensorBoard
 
 class Trainer:
     def __init__(
@@ -20,7 +21,6 @@ class Trainer:
         result_path: str,  # 결과 저장 경로
         exp_name: str,  # exp_name 추가
         config_path: str
-
     ):
         # 클래스 초기화: 모델, 디바이스, 데이터 로더 등 설정
         self.model = model  # 훈련할 모델
@@ -37,6 +37,9 @@ class Trainer:
         os.makedirs(self.result_path, exist_ok=False)
 
         shutil.copyfile(config_path, os.path.join(self.result_path, 'config.yaml'))
+
+        # TensorBoard SummaryWriter 설정
+        self.writer = SummaryWriter(log_dir=self.result_path)
 
         self.best_models = []  # 가장 좋은 상위 3개 모델의 정보를 저장할 리스트
         self.lowest_loss = float('inf')  # 가장 낮은 Loss를 저장할 변수
@@ -68,7 +71,7 @@ class Trainer:
         total_loss = 0.0
         progress_bar = tqdm(self.train_loader, desc="Training", leave=False)
         
-        for images, targets in progress_bar:
+        for batch_idx, (images, targets) in enumerate(progress_bar):
             images, targets = images.to(self.device), targets.to(self.device)
             self.optimizer.zero_grad()
             outputs = self.model(images)
@@ -78,10 +81,12 @@ class Trainer:
             self.scheduler.step()
             total_loss += loss.item()
             progress_bar.set_postfix(loss=loss.item())
+
+
         
         return total_loss / len(self.train_loader)
 
-    def validate(self) -> float:
+    def validate(self, epoch) -> float:
         # 모델의 검증을 진행
         self.model.eval()
         
@@ -104,8 +109,17 @@ class Trainer:
             print(f"Epoch {epoch+1}/{self.epochs}")
             
             train_loss = self.train_epoch()
-            val_loss = self.validate()
+            # TensorBoard에 배치 단위 훈련 손실 기록
+            self.writer.add_scalar('Train/Loss', train_loss, epoch)
+
+            val_loss = self.validate(epoch)
+            # TensorBoard에 에폭 단위 검증 손실 기록
+            self.writer.add_scalar('Validation/Loss', val_loss, epoch)
+            
             print(f"Epoch {epoch+1}, Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}\n")
 
             self.save_model(epoch, val_loss)
             self.scheduler.step()
+
+        # 훈련 완료 후 SummaryWriter 종료
+        self.writer.close()
