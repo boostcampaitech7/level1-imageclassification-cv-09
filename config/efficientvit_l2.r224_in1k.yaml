@@ -1,0 +1,47 @@
+exp_name: "efficientvit_l2.r224_in1k"
+seed: 999
+traindata_dir: './data/train'
+testdata_dir: './data/test'
+
+traindata_info_file: './data/train.csv'
+testdata_info_file: './data/test.csv'
+
+save_result_path: './train_result'
+
+transform:
+  transform_type: albumentations
+  augmentations:
+    - type: HorizontalFlip
+      params:
+        p: 0.5
+    - type: Rotate
+      params:
+        limit: 30
+        p: 0.7
+    - type: RandomBrightnessContrast
+      params:
+        brightness_limit: 0.2
+        contrast_limit: 0.2
+        p: 0.5
+
+device: 'cuda'
+
+model_type: 'timm'
+model_name: 'timm/efficientvit_l2.r224_in1k'
+pretrained: true
+
+loss: 'CELoss'
+
+optimizer:
+  type: Adam
+  params:
+    lr: 0.001
+
+scheduler:
+  type: StepLR
+  params:
+    step_size: 376
+    gamma: 0.1
+
+num_epochs: 10
+batch_size: 64
