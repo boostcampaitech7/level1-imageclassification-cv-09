@@ -1,9 +1,6 @@
 # Imagenet-Sketch Project
-yeah~
 
 ## Usage
-
-
 ### Config file format
 Config files are in `.yaml` format:
 ```yaml
