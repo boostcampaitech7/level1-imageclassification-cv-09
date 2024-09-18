@@ -1,5 +1,14 @@
 # Imagenet-Sketch Project
 
+## Requirements
+1. Install the required Python packages by running the following command:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. The imagenet_sketch dataset must be stored in the data folder. To download the dataset, execute following script:
+    ```bash
+    bash download_sketch_dataset.sh
+    ```
 ## Usage
 ### Config file format
 Config files are in `.yaml` format:
