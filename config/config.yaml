@@ -6,7 +6,8 @@ testdata_dir: './data/test'
 traindata_info_file: './data/train.csv'
 testdata_info_file: './data/test.csv'
 
-save_result_path: './train_result'
+train_result_path: './train_result'
+test_result_path: './output'
 
 transform:
   transform_type: albumentations
