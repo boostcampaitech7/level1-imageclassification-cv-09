@@ -2,6 +2,7 @@
 
 ## Requirements
 1. Install the required Python packages by running the following command:
+  <br/>It is highly recommended to use a virtual environment `venv`.
    ```bash
    pip install -r requirements.txt
    ```
