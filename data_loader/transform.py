@@ -43,7 +43,7 @@ class TransformSelector:
     """
     이미지 변환 라이브러리를 선택하기 위한 클래스.
     """
-    def __init__(self, transform_type: str, transform_config: str):
+    def __init__(self, transform_type: str, transform_config: str=None):
 
         # 지원하는 변환 라이브러리인지 확인
         if transform_type in ["albumentations"]:
