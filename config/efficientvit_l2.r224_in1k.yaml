@@ -1,4 +1,4 @@
-exp_name: "efficientvit_l2.r224_in1k"
+exp_name: "efficientvit_l2.r224_in1k_3"
 seed: 999
 traindata_dir: './data/train'
 testdata_dir: './data/test'
@@ -36,7 +36,7 @@ loss: 'CELoss'
 optimizer:
   type: Adam
   params:
-    lr: 0.001
+    lr: 0.01
 
 scheduler:
   type: StepLR
@@ -44,5 +44,9 @@ scheduler:
     step_size: 376
     gamma: 0.1
 
-num_epochs: 10
-batch_size: 64
+num_epochs: 100
+batch_size: 128
+
+#ES 추가
+patience: 10
+min_delta: 0.0005

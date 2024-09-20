@@ -6,6 +6,7 @@ import os
 import shutil
 from tqdm.auto import tqdm
 from torch.utils.tensorboard import SummaryWriter  # 추가: TensorBoard
+from torch.cuda.amp import autocast, GradScaler # ES 추가: Mixed Precision
 
 class Trainer:
     def __init__(
@@ -20,6 +21,8 @@ class Trainer:
         epochs: int,
         result_path: str,  # 결과 저장 경로
         exp_name: str,  # exp_name 추가
+        patience: int,   # ES 조기종료 추가
+        min_delta: float, # ES 조기종료 기준값
         config_path: str
     ):
         # 클래스 초기화: 모델, 디바이스, 데이터 로더 등 설정
@@ -31,6 +34,11 @@ class Trainer:
         self.scheduler = scheduler # 학습률 스케줄러
         self.loss_fn = loss_fn  # 손실 함수
         self.epochs = epochs  # 총 훈련 에폭 수
+        # ES 조기종료를 위한 추가
+        self.patience = patience
+        self.min_delta = min_delta
+        self.counter = 0
+        self.best_loss = float('inf')
 
         # result_path에 exp_name을 붙여서 저장 경로를 생성
         self.result_path = os.path.join(result_path, exp_name)
@@ -70,14 +78,23 @@ class Trainer:
         
         total_loss = 0.0
         progress_bar = tqdm(self.train_loader, desc="Training", leave=False)
-        
+        scaler = GradScaler()   # AMP를 위한 GradScaler 객체 생성
+
         for batch_idx, (images, targets) in enumerate(progress_bar):
             images, targets = images.to(self.device), targets.to(self.device)
             self.optimizer.zero_grad()
-            outputs = self.model(images)
-            loss = self.loss_fn(outputs, targets)
-            loss.backward()
-            self.optimizer.step()
+
+            with autocast(): #여기서 float16으로 계산
+                outputs = self.model(images)
+                loss = self.loss_fn(outputs, targets)
+
+            # outputs = self.model(images)
+            # loss = self.loss_fn(outputs, targets)
+            scaler.scale(loss).backward() # 스케일링된 loss로 역전파
+            scaler.step(self.optimizer)
+            scaler.update()
+            # loss.backward()
+            # self.optimizer.step()
             self.scheduler.step()
             total_loss += loss.item()
             progress_bar.set_postfix(loss=loss.item())
@@ -120,6 +137,17 @@ class Trainer:
 
             self.save_model(epoch, val_loss)
             self.scheduler.step()
+
+            # ES, 조기 종료 검사
+            if self.best_loss - val_loss > self.min_delta:
+                self.best_loss = val_loss
+                self.counter = 0
+            else:
+                self.counter += 1
+                if self.counter >= self.patience:
+                    print(f"조기 종료: {self.patience}epoch 동안 성능 향상 X.")
+                    break
+        
 
         # 훈련 완료 후 SummaryWriter 종료
         self.writer.close()

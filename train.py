@@ -38,7 +38,7 @@ def main(config, config_path):
     # 학습에 사용할 Transform을 선언.
     transform_selector = TransformSelector(
         transform_type = config['transform']['transform_type'],
-        transform_config = config['transform']["augmentations"]
+        transform_config = config['transform']["augmentations"] 
     )
     train_transform = transform_selector.get_transform(is_train=True)
     val_transform = transform_selector.get_transform(is_train=False)
@@ -88,6 +88,8 @@ def main(config, config_path):
         epochs=config['num_epochs'],
         result_path=train_result_path,
         exp_name=config['exp_name'],
+        patience=config['patience'],
+        min_delta=config['min_delta'],
         config_path=config_path,
     )
     # 모델 학습.

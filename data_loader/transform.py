@@ -9,7 +9,11 @@ class AlbumentationsTransform:
     def __init__(self, is_train: bool = True, transform_config:str=None):
         # 공통 변환 설정: 이미지 리사이즈, 정규화, 텐서 변환
         common_transforms = [
-            A.Resize(224, 224),  # 이미지를 224x224 크기로 리사이즈
+            # A.Resize(224, 224),  # 이미지를 224x224 크기로 리사이즈
+            # ES 종횡비 유지를 위한 추가
+            A.LongestMaxSize(max_size=224),  # 긴 쪽을 224로 맞추면서 종횡비 유지
+            A.PadIfNeeded(min_height=224, min_width=224, border_mode=0, value=255), # 패딩 추가해서 224x224로 맞춤
+            
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # 정규화
             ToTensorV2()  # albumentations에서 제공하는 PyTorch 텐서 변환
         ]

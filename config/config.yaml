@@ -1,4 +1,4 @@
-exp_name: "base_experiment"
+exp_name: "base_experiment2"
 seed: 999
 traindata_dir: './data/train'
 testdata_dir: './data/test'
