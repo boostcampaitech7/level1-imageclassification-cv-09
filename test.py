@@ -82,21 +82,30 @@ def test(config):
     # torch라이브러리에서 gpu를 인식할 경우, cuda로 설정.
     device = config['device']
 
-    # 추론에 사용할 Model을 선언.
-    model_selector = ModelSelector(
-        model_type=config['model_type'], 
-        num_classes=num_classes,
-        model_name=config['model_name'], 
-        pretrained=False
-    )
-    model = model_selector.get_model()
+
 
     # lora model
     if config.get('lora') and config['lora']['use']:
+        # 추론에 사용할 Model을 선언.
+        model_selector = ModelSelector(
+            model_type=config['model_type'], 
+            num_classes=num_classes,
+            model_name=config['model_name'], 
+            pretrained=True
+        )
+        model = model_selector.get_model()
         model = peft.PeftModel.from_pretrained(model, os.path.join(train_result_path, "best_model"))
 
     # general model
     else:
+        # 추론에 사용할 Model을 선언.
+        model_selector = ModelSelector(
+            model_type=config['model_type'], 
+            num_classes=num_classes,
+            model_name=config['model_name'], 
+            pretrained=False
+        )
+        model = model_selector.get_model()
         # best epoch 모델을 불러오기.
         model.load_state_dict(
             torch.load(
