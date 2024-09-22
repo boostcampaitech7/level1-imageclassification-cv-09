@@ -76,6 +76,7 @@ def main(config, config_path):
         #     print(f"Name: {name}, Type: {module}")    
 
         # print([(n, type(m)) for n, m in model.named_modules()][-10:])
+        # exit()
 
         # target_classes = (torch.nn.modules.linear.Linear, torch.nn.modules.conv.Conv2d)
         # target_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and not 'head' in name]
