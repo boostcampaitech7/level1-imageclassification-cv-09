@@ -1,4 +1,4 @@
-exp_name: "vit_base_patch16_clip_224.laion2b_ft_in1k"
+exp_name: "resnext101_32x32d.fb_wsl_ig1b_ft_in1k"
 seed: 999
 traindata_dir: './data/train'
 testdata_dir: './data/test'
@@ -47,10 +47,10 @@ transform:
 device: 'cuda'
 
 model_type: 'timm'
-model_name: 'vit_base_patch16_clip_224.laion2b_ft_in1k'
+model_name: 'resnext101_32x32d.fb_wsl_ig1b_ft_in1k'
 pretrained: true
 
-loss: 'FocalLoss'
+loss: 'SmoothingLoss'
 
 lora:
   use: true
@@ -62,17 +62,19 @@ lora:
     modules_to_save: ["head"]
 
 optimizer:
-  type: Adam
+  type: AdamW
   params:
     lr: 0.001
-    weight_decay: 1.0e-5
+    betas: [0.9, 0.999]
+    eps: 1.0e-8
+    amsgrad: False
+
 
 scheduler:
-  type: CosineAnnealingWarmRestarts
+  type: CosineAnnealingLR
   params:
-    T_0: 1
-    T_mult: 2
-    eta_min: 0.001
+    T_max: 10
+    eta_min: 1.0e-6
 
-num_epochs: 8
+num_epochs: 10
 batch_size: 64
