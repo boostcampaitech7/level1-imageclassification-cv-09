@@ -71,12 +71,18 @@ def main(config, config_path):
 
     # peft, LoRA fine tuning
     if config.get('lora') and config['lora']['use']:
-        # print([(n, type(m)) for n, m in model.named_modules()][-10:])
-        target_classes = (torch.nn.modules.linear.Linear, torch.nn.modules.conv.Conv2d)
-        target_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and not 'head' in name]
-        save_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and 'head' in name]
+        
+        # for name, module in [(n, type(m)) for n, m in model.named_modules()][100:]:
+        #     print(f"Name: {name}, Type: {module}")    
 
-        lora_config = peft.LoraConfig(r=8, lora_alpha=16, lora_dropout=0.1, target_modules=r".*\.mlp\.fc\d", modules_to_save=["head.fc"])
+        # print([(n, type(m)) for n, m in model.named_modules()][-10:])
+
+        # target_classes = (torch.nn.modules.linear.Linear, torch.nn.modules.conv.Conv2d)
+        # target_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and not 'head' in name]
+        # save_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and 'head' in name]
+
+        
+        lora_config = peft.LoraConfig(**config['lora']['params'])
         peft_model = peft.get_peft_model(model, lora_config).to(device)
         optimizer = getattr(optim, config['optimizer']['type'])(peft_model.parameters(), **config['optimizer']['params'])
         scheduler = getattr(optim.lr_scheduler, config['scheduler']['type'])(optimizer, **config['scheduler']['params'])
