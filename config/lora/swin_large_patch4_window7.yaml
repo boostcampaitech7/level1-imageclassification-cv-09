@@ -1,5 +1,5 @@
-exp_name: "mobilenetv4_conv_aa_large.e230_r384_in12k_ft_in1k"
-seed: 888
+exp_name: "swin_large_patch4_window7_224.ms_in22k_ft_in1k"
+seed: 777
 traindata_dir: './data/train'
 testdata_dir: './data/test'
 
@@ -47,7 +47,7 @@ transform:
 device: 'cuda'
 
 model_type: 'timm'
-model_name: 'mobilenetv4_conv_aa_large.e230_r384_in12k_ft_in1k'
+model_name: 'swin_large_patch4_window7_224.ms_in22k_ft_in1k'
 pretrained: true
 
 loss: 'SmoothingLoss'
@@ -58,8 +58,8 @@ lora:
     r: 8
     lora_alpha: 16
     lora_dropout: 0.1
-    target_modules: '.*(conv\d)'
-    modules_to_save: ["classifier"]
+    target_modules: '.*(attn.qkv|attn.proj|mlp.fc\d)'
+    modules_to_save: ["head.fc"]
 
 optimizer:
   type: AdamW
