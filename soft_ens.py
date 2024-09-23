@@ -18,6 +18,7 @@ import peft
 # 모델 추론을 위한 함수
 def inference_ensemble(
     models: list,  # 모델 리스트
+    weights: list,  # 모델 가중치 리스트
     device: torch.device, 
     test_loader: DataLoader
 ):
@@ -34,13 +35,13 @@ def inference_ensemble(
             
             # 각 모델의 softmax 확률 계산
             logits_list = []
-            for model in models:
+            for i, model in enumerate(models):
                 logits = model(images)
                 logits = F.softmax(logits, dim=1)  # 소프트맥스 적용 (확률 분포)
-                logits_list.append(logits)
+                logits_list.append(logits * weights[i])  # 가중치 곱하기
             
-            # 모든 모델의 확률 평균화 (Soft Ensembling)
-            avg_logits = torch.mean(torch.stack(logits_list), dim=0)
+            # 가중치를 적용한 모델의 확률 합산
+            avg_logits = torch.sum(torch.stack(logits_list), dim=0)
             
             # 평균된 확률에서 가장 높은 값의 클래스를 예측
             preds = avg_logits.argmax(dim=1)
@@ -49,6 +50,7 @@ def inference_ensemble(
             predictions.extend(preds.cpu().detach().numpy())  # 결과를 CPU로 옮기고 리스트에 추가
     
     return predictions
+
 
 def test():
     device = 'cuda'
@@ -92,10 +94,11 @@ def test():
     model_names = [
         ('timm', 'caformer_b36.sail_in22k_ft_in1k'),
         ('timm','deit3_large_patch16_224.fb_in22k_ft_in1k'),
-        ('timm','swin_large_patch4_window7_224.ms_in22k_ft_in1k')
+        ('timm','swin_large_patch4_window7_224.ms_in22k_ft_in1k'),
+        ('hub', 'dinov2_vitl14_reg_lc')
     ]
 
-
+    model_weights = [0.2, 0.3, 0.2, 0.3]
     # lora model
     # 추론에 사용할 Model을 선언.
     for i in range(len(model_names)):
@@ -113,6 +116,7 @@ def test():
     # 테스트 함수 호출
     predictions = inference_ensemble(
         models=models, 
+        weights=model_weights,  # 모델 가중치 전달
         device=device, 
         test_loader=test_loader
     )
