@@ -4,7 +4,7 @@ from data_loader.dataset import CustomDataset
 from data_loader.transform import TransformSelector
 from model.model import ModelSelector
 from model import loss
-from trainer.trainer import Trainer
+from trainer.trainer import Trainer, LoRATrainer
 import pandas as pd
 from torch.utils.data import DataLoader
 from torch import optim
@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 import argparse
 from config_parser import ConfigParser
 import random
+import peft
 
 
 
@@ -69,31 +70,71 @@ def main(config, config_path):
     model_selector = ModelSelector(model_type=config['model_type'], model_name=config['model_name'], num_classes=num_classes, pretrained=config['pretrained'])
     model = model_selector.get_model().to(device)
 
-    # 학습에 사용할 optimizer를 선언
-    optimizer = getattr(optim, config['optimizer']['type'])(model.parameters(), **config['optimizer']['params'])
-    # 스케줄러 선언
-    scheduler = getattr(optim.lr_scheduler, config['scheduler']['type'])(optimizer, **config['scheduler']['params'])
-    # 학습에 사용할 Loss를 선언.
-    loss_fn = getattr(loss, config['loss'])()
+    # peft, LoRA fine tuning
+    if config.get('lora') and config['lora']['use']:
+        
+        # for name, module in [(n, type(m)) for n, m in model.named_modules()][100:]:
+        #     print(f"Name: {name}, Type: {module}")    
 
-    # 앞서 선언한 필요 class와 변수들을 조합해, 학습을 진행할 Trainer를 선언. 
-    trainer = Trainer(
-        model=model, 
-        device=device, 
-        train_loader=train_loader,
-        val_loader=val_loader, 
-        optimizer=optimizer,
-        scheduler=scheduler,
-        loss_fn=loss_fn, 
-        epochs=config['num_epochs'],
-        result_path=train_result_path,
-        exp_name=config['exp_name'],
-        patience=config['patience'],
-        min_delta=config['min_delta'],
-        config_path=config_path,
-    )
-    # 모델 학습.
-    trainer.train()
+        # print([(n, type(m)) for n, m in model.named_modules()][-10:])
+        # exit()
+
+        # target_classes = (torch.nn.modules.linear.Linear, torch.nn.modules.conv.Conv2d)
+        # target_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and not 'head' in name]
+        # save_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and 'head' in name]
+
+        
+        lora_config = peft.LoraConfig(**config['lora']['params'])
+        peft_model = peft.get_peft_model(model, lora_config).to(device)
+        optimizer = getattr(optim, config['optimizer']['type'])(peft_model.parameters(), **config['optimizer']['params'])
+        scheduler = getattr(optim.lr_scheduler, config['scheduler']['type'])(optimizer, **config['scheduler']['params'])
+        peft_model.print_trainable_parameters()
+
+        loss_fn = getattr(loss, config['loss'])()
+
+        # 앞서 선언한 필요 class와 변수들을 조합해, 학습을 진행할 Trainer를 선언. 
+        trainer = LoRATrainer(
+            model=peft_model, 
+            device=device, 
+            train_loader=train_loader,
+            val_loader=val_loader, 
+            optimizer=optimizer,
+            scheduler=scheduler,
+            loss_fn=loss_fn, 
+            epochs=config['num_epochs'],
+            result_path=train_result_path,
+            exp_name=config['exp_name'],
+            config_path=config_path,
+        )
+        # 모델 학습.
+        trainer.train()
+
+    # general training
+    else:
+        # 학습에 사용할 optimizer를 선언
+        optimizer = getattr(optim, config['optimizer']['type'])(model.parameters(), **config['optimizer']['params'])
+        # 스케줄러 선언
+        scheduler = getattr(optim.lr_scheduler, config['scheduler']['type'])(optimizer, **config['scheduler']['params'])
+        # 학습에 사용할 Loss를 선언.
+
+        loss_fn = getattr(loss, config['loss'])()
+
+        # 앞서 선언한 필요 class와 변수들을 조합해, 학습을 진행할 Trainer를 선언. 
+        trainer = Trainer(
+            model=model, 
+            device=device, 
+            train_loader=train_loader,
+            val_loader=val_loader, 
+            optimizer=optimizer,
+            scheduler=scheduler,
+            loss_fn=loss_fn, 
+            epochs=config['num_epochs'],
+            result_path=train_result_path,
+            exp_name=config['exp_name'],
+            config_path=config_path,
+        )
+        # 모델 학습.
+        trainer.train()
 
 
 if __name__ == "__main__":
