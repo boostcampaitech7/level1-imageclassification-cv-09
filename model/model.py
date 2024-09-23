@@ -83,13 +83,15 @@ class HubModel(nn.Module):
     def __init__(
         self, 
         repo_or_dir: str,
-        model: str
+        model: str,
+        num_classes: int
     ):
         super(HubModel, self).__init__()
         self.model = torch.hub.load(
             repo_or_dir=repo_or_dir, 
-            model=model
+            model=model,
         )
+        self.model.linear_head = nn.Linear(self.model.linear_head.in_features, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         
@@ -117,7 +119,8 @@ class ModelSelector:
         elif model_type == 'timm':
             self.model = TimmModel(num_classes=num_classes, **kwargs)
         elif model_type == 'hub':
-            self.model = HubModel('facebookresearch/dinov2', 'dinov2_vitl14_reg_lc')
+            self.model = HubModel('facebookresearch/dinov2', 'dinov2_vitl14_reg_lc', num_classes=num_classes)
+            
         else:
             raise ValueError("Unknown model type specified.")
 
