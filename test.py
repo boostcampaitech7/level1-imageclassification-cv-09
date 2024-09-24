@@ -13,6 +13,7 @@ from data_loader.dataset import CustomDataset
 from model.model import ModelSelector
 from sklearn.model_selection import train_test_split
 import torch.nn.functional as F
+import peft
 
 # 모델 추론을 위한 함수
 def inference(
@@ -86,11 +87,12 @@ def test(config):
         model_type=config['model_type'], 
         num_classes=num_classes,
         model_name=config['model_name'], 
-        pretrained=False
+        pretrained=True
     )
     model = model_selector.get_model()
-
+    model = peft.PeftModel.from_pretrained(model, os.path.join(train_result_path, "best_model.pt"))
     # best epoch 모델을 불러오기.
+    '''
     model.load_state_dict(
         torch.load(
             os.path.join(train_result_path, "best_model.pt"),
@@ -98,7 +100,7 @@ def test(config):
             weights_only=True
         )
     )
-
+    '''
     # predictions를 CSV에 저장할 때 형식을 맞춰서 저장
     # 테스트 함수 호출
     predictions = inference(
@@ -168,11 +170,12 @@ def valid(config):
         model_type=config['model_type'], 
         num_classes=num_classes,
         model_name=config['model_name'], 
-        pretrained=False
+        pretrained=True
     )
     model = model_selector.get_model()
-
+    model = peft.PeftModel.from_pretrained(model, os.path.join(train_result_path, "best_model.pt"))
     # best epoch 모델을 불러오기.
+    '''
     model.load_state_dict(
         torch.load(
             os.path.join(train_result_path, "best_model.pt"),
@@ -180,7 +183,8 @@ def valid(config):
             weights_only=True
         )
     )
-
+    '''
+    
     # predictions를 CSV에 저장할 때 형식을 맞춰서 저장
     # 테스트 함수 호출
     val_predictions = inference(

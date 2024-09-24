@@ -34,7 +34,7 @@ class Trainer:
 
         # result_path에 exp_name을 붙여서 저장 경로를 생성
         self.result_path = os.path.join(result_path, exp_name)
-        os.makedirs(self.result_path, exist_ok=False)
+        os.makedirs(self.result_path, exist_ok=True)
 
         shutil.copyfile(config_path, os.path.join(self.result_path, 'config.yaml'))
 
@@ -61,7 +61,8 @@ class Trainer:
         if loss < self.lowest_loss:
             self.lowest_loss = loss
             best_model_path = os.path.join(self.result_path, 'best_model.pt')
-            torch.save(self.model.state_dict(), best_model_path)
+            #torch.save(self.model.state_dict(), best_model_path)
+            self.model.save_pretrained(best_model_path)
             print(f"Save {epoch}epoch result. Loss = {loss:.4f}")
 
     def train_epoch(self) -> float:

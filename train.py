@@ -1,4 +1,4 @@
-import torch
+import torch, gc
 import numpy as np
 from data_loader.dataset import CustomDataset
 from data_loader.transform import TransformSelector
@@ -12,12 +12,13 @@ from sklearn.model_selection import train_test_split
 import argparse
 from config_parser import ConfigParser
 import random
-
+from peft import get_peft_model, LoraConfig
 
 
 def main(config, config_path):
     device = config['device']
-    
+    gc.collect()
+    torch.cuda.empty_cache()
     # Load datasets
     traindata_dir = config['traindata_dir']
     traindata_info_file = config['traindata_info_file']
@@ -69,6 +70,21 @@ def main(config, config_path):
     model_selector = ModelSelector(model_type=config['model_type'], model_name=config['model_name'], num_classes=num_classes, pretrained=config['pretrained'])
     model = model_selector.get_model().to(device)
 
+
+    #target_classes = (torch.nn.modules.linear.Linear, torch.nn.modules.conv.Conv2d)
+    #target_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes)]
+    
+    target_modules = '.*(mlp.fc\d)'
+
+    '''
+    layer_list = list(model.named_modules())
+    for name, module in layer_list[-10:]:
+        print(name, module)
+    '''
+
+    lora_config = LoraConfig(r = 8, lora_alpha=16, lora_dropout=0.1, target_modules=target_modules, modules_to_save=["model.head.fc.fc2"])
+    model = get_peft_model(model, lora_config).to(device)
+    model.print_trainable_parameters()
     # 학습에 사용할 optimizer를 선언
     optimizer = getattr(optim, config['optimizer']['type'])(model.parameters(), **config['optimizer']['params'])
     # 스케줄러 선언
