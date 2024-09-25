@@ -3,6 +3,8 @@ from albumentations.pytorch import ToTensorV2
 import numpy as np
 import torch
 from torchvision.transforms import v2 as transforms
+import os
+from PIL import Image
 
 class AlbumentationsTransform:
     def __init__(self, is_train: bool = True, transform_config:str=None):
@@ -83,9 +85,61 @@ class AutoAug:
             ),
             transforms.Resize((224, 224)),
         ]
+        self.is_train = is_train
         if is_train:
             # 훈련용 변환: 랜덤 수평 뒤집기, 랜덤 회전, 랜덤 밝기 및 대비 조정 추가
             self.transform = transforms.Compose([transforms.ToTensor(), transforms.AutoAugment()] + common_transforms)
+        else:
+            # 검증/테스트용 변환: 공통 변환만 적용
+            self.transform = transforms.Compose([transforms.ToTensor()] + common_transforms)
+
+    def __call__(self, image) -> torch.Tensor:
+        # 이미지가 NumPy 배열인지 확인
+        if not isinstance(image, np.ndarray):
+            raise TypeError("Image should be a NumPy array (OpenCV format).")
+        
+        # 이미지에 변환 적용 및 결과 반환
+        transformed = self.transform(image)  # 이미지에 설정된 변환을 적용
+        
+        return transformed  # 변환된 이미지의 텐서를 반환
+    
+class RandAug:
+    def __init__(self, is_train: bool = True, transform_config:str=None):
+        common_transforms = [ 
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            ),
+            transforms.Resize((224, 224)),
+        ]
+        if is_train:
+            # 훈련용 변환: 랜덤 수평 뒤집기, 랜덤 회전, 랜덤 밝기 및 대비 조정 추가
+            self.transform = transforms.Compose([transforms.ToTensor(), transforms.RandAugment()] + common_transforms)
+        else:
+            # 검증/테스트용 변환: 공통 변환만 적용
+            self.transform = transforms.Compose([transforms.ToTensor()] + common_transforms)
+
+    def __call__(self, image) -> torch.Tensor:
+        # 이미지가 NumPy 배열인지 확인
+        if not isinstance(image, np.ndarray):
+            raise TypeError("Image should be a NumPy array (OpenCV format).")
+        
+        # 이미지에 변환 적용 및 결과 반환
+        transformed = self.transform(image)  # 이미지에 설정된 변환을 적용
+        return transformed  # 변환된 이미지의 텐서를 반환
+
+class TrivialAug:
+    def __init__(self, is_train: bool = True, transform_config:str=None):
+        common_transforms = [ 
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            ),
+            transforms.Resize((224, 224)),
+        ]
+        if is_train:
+            # 훈련용 변환: 랜덤 수평 뒤집기, 랜덤 회전, 랜덤 밝기 및 대비 조정 추가
+            self.transform = transforms.Compose([transforms.ToTensor(), transforms.TrivialAugmentWide()] + common_transforms)
         else:
             # 검증/테스트용 변환: 공통 변환만 적용
             self.transform = transforms.Compose([transforms.ToTensor()] + common_transforms)
@@ -106,7 +160,7 @@ class TransformSelector:
     def __init__(self, transform_type: str, transform_config: str=None):
 
         # 지원하는 변환 라이브러리인지 확인
-        if transform_type in ["albumentations", "torchvision", "autoaugment"]:
+        if transform_type in ["albumentations", "torchvision", "autoaugment", "randaugment", "trivialaugment"]:
             self.transform_type = transform_type
             self.transform_config = transform_config
         
@@ -121,5 +175,9 @@ class TransformSelector:
         if self.transform_type == 'torchvision':
             transform = TorchvisionTransform(is_train=is_train, transform_config=self.transform_config)
         if self.transform_type == 'autoaugment':
-            transform = AutoAug()
+            transform = AutoAug(is_train=is_train)
+        if self.transform_type == 'randaugment':
+            transform = RandAug(is_train=is_train)
+        if self.transform_type == 'trivialaugment':
+            transform = TrivialAug(is_train=is_train)
         return transform
