@@ -2,8 +2,6 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 import numpy as np
 import torch
-from torchvision import transforms
-from torchvision.transforms import TrivialAugmentWide, ToTensor, Resize
 
 class AlbumentationsTransform:
     def __init__(self, is_train: bool = True, transform_config:str=None):

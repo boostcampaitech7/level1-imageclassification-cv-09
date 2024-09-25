@@ -68,4 +68,5 @@ class FocalLoss(nn.Module):
         elif self.reduction == 'sum':
             return F_loss.sum()
         else:
+            #none, 샘블별 손실을 유지하면서 반환
             return F_loss
