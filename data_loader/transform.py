@@ -2,6 +2,10 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 import numpy as np
 import torch
+import torchvision.transforms as T
+from torchvision.transforms import InterpolationMode
+from torchvision.transforms import TrivialAugmentWide
+from PIL import Image
 
 class AlbumentationsTransform:
     def __init__(self, is_train: bool = True, transform_config:str=None):
@@ -39,6 +43,35 @@ class AlbumentationsTransform:
         return transformed['image']  # 변환된 이미지의 텐서를 반환
 
 
+class TrivialAugmentTransform:
+    def __init__(self, is_train: bool = True):
+        # 공통 변환 설정
+        common_transforms = [
+            T.Resize((224, 224), interpolation=InterpolationMode.BILINEAR),
+            T.ToTensor(),
+            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ]
+        
+        if is_train:
+            # 훈련용 변환: TrivialAugment 적용
+            self.transform = T.Compose([
+                TrivialAugmentWide(),
+                *common_transforms
+            ])
+        else:
+            # 검증/테스트용 변환: 공통 변환만 적용
+            self.transform = T.Compose(common_transforms)
+
+
+    def __call__(self, image: np.ndarray) -> torch.Tensor:
+        image = Image.fromarray(image)  # numpy 배열을 PIL 이미지로 변환
+        
+        transformed = self.transform(image)  # 설정된 변환을 적용
+        
+        return transformed  # 변환된 이미지 반환
+
+
+
 class TransformSelector:
     """
     이미지 변환 라이브러리를 선택하기 위한 클래스.
@@ -46,17 +79,19 @@ class TransformSelector:
     def __init__(self, transform_type: str, transform_config: str=None):
 
         # 지원하는 변환 라이브러리인지 확인
-        if transform_type in ["albumentations"]:
+        if transform_type in ["TrivialAugmentWide", "albumentations"]:
             self.transform_type = transform_type
             self.transform_config = transform_config
-
         else:
             raise ValueError("Unknown transformation library specified.")
 
     def get_transform(self, is_train: bool):
         
         # 선택된 라이브러리에 따라 적절한 변환 객체를 생성
-        if self.transform_type == 'albumentations':
+        if self.transform_type == 'TrivialAugmentWide':
+            transform = TrivialAugmentTransform(is_train=is_train)
+        
+        elif self.transform_type == 'albumentations':
             transform = AlbumentationsTransform(is_train=is_train, transform_config=self.transform_config)
-
+        
         return transform
