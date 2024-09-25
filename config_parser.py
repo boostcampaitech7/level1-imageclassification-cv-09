@@ -43,13 +43,13 @@ class ConfigParser:
         """
         return self.config.get('transform', {})
     
-    # def get_loss_config(self):
-    #     """
-    #     loss 설정을 가져오는 헬퍼 메서드.
+    def get_loss_config(self):
+        """
+        loss 설정을 가져오는 헬퍼 메서드.
         
-    #     :return: loss 설정의 딕셔너리 값
-    #     """
-    #     return self.config.get('loss', {})
+        :return: loss 설정의 딕셔너리 값
+        """
+        return self.config.get('loss', {})
 
     def get_optimizer_config(self):
         """
@@ -78,7 +78,7 @@ class ConfigParser:
 
 # 예시 사용
 if __name__ == "__main__":
-    config_parser = ConfigParser("config.yaml")
+    config_parser = ConfigParser("/data/ephemeral/home/eunseop/project1/config/ES3_ConvNeXt_Focal.yaml")
     
     # 특정 설정 가져오기
     device = config_parser.get('device', 'cpu')
@@ -88,9 +88,9 @@ if __name__ == "__main__":
     transform_config = config_parser.get_transform_config()
     print(f"Transform Config: {transform_config}")
     
-    # # loss 설정 가져오기
-    # loss_config = config_parser.get_loss_config()
-    # print(f"Loss Config: {loss_config}")
+    # loss 설정 가져오기
+    loss_config = config_parser.get_loss_config()
+    print(f"Loss Config: {loss_config}")
 
     # optimizer 설정 가져오기
     optimizer_config = config_parser.get_optimizer_config()

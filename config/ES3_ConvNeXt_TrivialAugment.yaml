@@ -1,0 +1,44 @@
+exp_name: "ES3_ConvNeXt_base_Trivial"
+seed: 999
+traindata_dir: './data/train'
+testdata_dir: './data/test'
+
+traindata_info_file: './data/train.csv'
+testdata_info_file: './data/test.csv'
+
+train_result_path: './train_result'
+test_result_path: './output'
+
+transform:
+  transform_type: TrivialAugmentWide
+  augmentations: None
+
+device: 'cuda'
+
+model_type: 'torchvision'
+model_name: 'convnext_base'
+pretrained: true
+
+loss: 'SmoothingLoss'
+
+optimizer:
+  type: AdamW
+  params:
+    lr: 0.001
+    betas: [0.9, 0.999]
+    eps: 1.0e-8
+    amsgrad: False
+
+scheduler:
+  type: CosineAnnealingLR
+  params:
+    T_max: 10
+    eta_min: 1.0e-6
+
+
+num_epochs: 5
+batch_size: 128
+
+#ES 추가
+patience: 10
+min_delta: 0.0002

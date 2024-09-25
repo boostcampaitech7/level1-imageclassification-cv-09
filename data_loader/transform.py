@@ -3,14 +3,14 @@ from albumentations.pytorch import ToTensorV2
 import numpy as np
 import torch
 from torchvision import transforms
-
+from torchvision.transforms import TrivialAugmentWide, ToTensor, Resize
 
 class AlbumentationsTransform:
     def __init__(self, is_train: bool = True, transform_config:str=None):
+
         # 공통 변환 설정: 이미지 리사이즈, 정규화, 텐서 변환
         common_transforms = [
             A.Resize(224, 224),  # 이미지를 224x224 크기로 리사이즈
-            
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # 정규화
             ToTensorV2()  # albumentations에서 제공하는 PyTorch 텐서 변환
         ]
@@ -39,7 +39,8 @@ class AlbumentationsTransform:
         transformed = self.transform(image=image)  # 이미지에 설정된 변환을 적용
         
         return transformed['image']  # 변환된 이미지의 텐서를 반환
-    
+
+
 class TransformSelector:
     """
     이미지 변환 라이브러리를 선택하기 위한 클래스.
@@ -50,7 +51,7 @@ class TransformSelector:
         if transform_type in ["albumentations"]:
             self.transform_type = transform_type
             self.transform_config = transform_config
-        
+
         else:
             raise ValueError("Unknown transformation library specified.")
 
@@ -59,5 +60,5 @@ class TransformSelector:
         # 선택된 라이브러리에 따라 적절한 변환 객체를 생성
         if self.transform_type == 'albumentations':
             transform = AlbumentationsTransform(is_train=is_train, transform_config=self.transform_config)
-        
+
         return transform
