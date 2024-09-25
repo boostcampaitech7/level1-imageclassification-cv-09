@@ -95,10 +95,11 @@ def test():
         ('timm', 'caformer_b36.sail_in22k_ft_in1k'),
         ('timm','deit3_large_patch16_224.fb_in22k_ft_in1k'),
         ('timm','swin_large_patch4_window7_224.ms_in22k_ft_in1k'),
-        ('hub', 'dinov2_vitl14_reg_lc')
+        ('hub', 'dinov2_vitl14_reg_lc'),
+        ('timm', 'vit_large_patch14_clip_224.openai_ft_in1k')
     ]
 
-    model_weights = [0.2, 0.3, 0.2, 0.3]
+    model_weights = [0.2, 0.2, 0.2, 0.2, 0.2]
     # lora model
     # 추론에 사용할 Model을 선언.
     for i in range(len(model_names)):
