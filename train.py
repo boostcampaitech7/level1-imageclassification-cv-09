@@ -41,8 +41,10 @@ def main(config, config_path):
         transform_type = config['transform']['transform_type'],
         transform_config = config['transform']["augmentations"] 
     )
+
     train_transform = transform_selector.get_transform(is_train=True)
     val_transform = transform_selector.get_transform(is_train=False)
+
 
     # 학습에 사용할 Dataset을 선언.
     train_dataset = CustomDataset(
@@ -90,7 +92,10 @@ def main(config, config_path):
         scheduler = getattr(optim.lr_scheduler, config['scheduler']['type'])(optimizer, **config['scheduler']['params'])
         peft_model.print_trainable_parameters()
 
-        loss_fn = getattr(loss, config['loss'])()
+        if 'params' in config['loss']:
+            loss_fn = getattr(loss, config['loss']['type'])(**config['loss']['params'])
+        else:   
+            loss_fn = getattr(loss, config['loss'])()
 
         # 앞서 선언한 필요 class와 변수들을 조합해, 학습을 진행할 Trainer를 선언. 
         trainer = LoRATrainer(
@@ -117,7 +122,10 @@ def main(config, config_path):
         scheduler = getattr(optim.lr_scheduler, config['scheduler']['type'])(optimizer, **config['scheduler']['params'])
         # 학습에 사용할 Loss를 선언.
 
-        loss_fn = getattr(loss, config['loss'])()
+        if 'params' in config['loss']:
+            loss_fn = getattr(loss, config['loss']['type'])(**config['loss']['params'])
+        else:   
+            loss_fn = getattr(loss, config['loss'])()
 
         # 앞서 선언한 필요 class와 변수들을 조합해, 학습을 진행할 Trainer를 선언. 
         trainer = Trainer(
@@ -132,6 +140,9 @@ def main(config, config_path):
             result_path=train_result_path,
             exp_name=config['exp_name'],
             config_path=config_path,
+            #earlystopping
+            patience = config['patience'],
+            min_delta = config['min_delta']
         )
         # 모델 학습.
         trainer.train()

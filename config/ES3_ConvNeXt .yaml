@@ -29,8 +29,57 @@ transform:
         p: 0.3
     - type: Blur
       params: 
-        blur_limit: 61 # 여기 주의
+        blur_limit: 61 
         p: 0.1
+
+# transform:
+#   transform_type: albumentations
+#   augmentations:
+#     - type: Rotate
+#       params:
+#         limit: [-120, 120]
+#         p: 0.5
+#         border_mode: 1
+#     - type: HorizontalFlip
+#       params:
+#         p: 0.5
+#     - type: VerticalFlip
+#       params:
+#         p: 0.5
+#     - type: GaussNoise
+#       params:
+#         var_limit: [10.0, 50.0]
+#         mean: 0
+#         per_channel: true
+#         noise_scale_factor: 1
+#         p: 0.5
+#     - type: LongestMaxSize
+#       params:
+#         max_size: 224
+#     - type: PadIfNeeded
+#       params:
+#         min_height: 224
+#         min_width: 224
+#         border_mode: 0
+#         value: 255
+#     - type: RandomResizedCrop
+#       params:
+#         height: 224
+#         width: 224
+#         scale: [0.4, 0.8]
+#         ratio: [0.5, 1.5]
+#         p: 0.5
+#     - type: CoarseDropout
+#       params:
+#         p: 0.5
+#         max_holes: 8
+#         max_height: 60
+#         max_width: 60
+#         min_holes: 8
+#         min_height: 45
+#         min_width: 45
+#         fill_value: [255,255,255]
+
 
 device: 'cuda'
 
@@ -54,7 +103,8 @@ scheduler:
     T_max: 10
     eta_min: 1.0e-6
 
-num_epochs: 100
+
+num_epochs: 5
 batch_size: 128
 
 #ES 추가
