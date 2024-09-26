@@ -21,8 +21,6 @@ class MPTrainer:
         epochs: int,
         result_path: str,  # 결과 저장 경로
         exp_name: str,  # exp_name 추가
-        patience: int,   # ES 조기종료 추가
-        min_delta: float, # ES 조기종료 기준값
         config_path: str
     ):
         # 클래스 초기화: 모델, 디바이스, 데이터 로더 등 설정
@@ -34,11 +32,6 @@ class MPTrainer:
         self.scheduler = scheduler # 학습률 스케줄러
         self.loss_fn = loss_fn  # 손실 함수
         self.epochs = epochs  # 총 훈련 에폭 수
-        # ES 조기종료를 위한 추가
-        self.patience = patience
-        self.min_delta = min_delta
-        self.counter = 0
-        self.best_loss = float('inf')
 
         # result_path에 exp_name을 붙여서 저장 경로를 생성
         self.result_path = os.path.join(result_path, exp_name)
