@@ -101,6 +101,7 @@ def test():
     ]
 
     model_weights = [1, 1, 1, 1, 1, 2]
+
     # lora model
     # 추론에 사용할 Model을 선언.
     for i in range(len(model_names)):
@@ -143,3 +144,4 @@ if __name__ == "__main__":
     np.random.seed(SEED)
 
     test()
+

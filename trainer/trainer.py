@@ -61,7 +61,8 @@ class Trainer:
         if loss < self.lowest_loss:
             self.lowest_loss = loss
             best_model_path = os.path.join(self.result_path, 'best_model.pt')
-            torch.save(self.model.state_dict(), best_model_path)
+            #torch.save(self.model.state_dict(), best_model_path)
+            self.model.save_pretrained(best_model_path)
             print(f"Save {epoch}epoch result. Loss = {loss:.4f}")
 
     def train_epoch(self) -> float:
@@ -123,7 +124,6 @@ class Trainer:
 
         # 훈련 완료 후 SummaryWriter 종료
         self.writer.close()
-
 
 class LoRATrainer:
     def __init__(
@@ -245,3 +245,4 @@ class LoRATrainer:
 
         # 훈련 완료 후 SummaryWriter 종료
         self.writer.close()
+

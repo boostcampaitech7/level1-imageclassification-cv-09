@@ -1,4 +1,4 @@
-import torch
+import torch, gc
 import numpy as np
 from data_loader.dataset import CustomDataset
 from data_loader.transform import TransformSelector
@@ -17,7 +17,8 @@ import peft
 
 def main(config, config_path):
     device = config['device']
-    
+    gc.collect()
+    torch.cuda.empty_cache()
     # Load datasets
     traindata_dir = config['traindata_dir']
     traindata_info_file = config['traindata_info_file']
@@ -69,6 +70,7 @@ def main(config, config_path):
     model_selector = ModelSelector(model_type=config['model_type'], model_name=config['model_name'], num_classes=num_classes, pretrained=config['pretrained'])
     model = model_selector.get_model().to(device)
 
+
     # peft, LoRA fine tuning
     if config.get('lora') and config['lora']['use']:
         
@@ -82,7 +84,6 @@ def main(config, config_path):
         # target_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and not 'head' in name]
         # save_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and 'head' in name]
 
-        
         lora_config = peft.LoraConfig(**config['lora']['params'])
         peft_model = peft.get_peft_model(model, lora_config).to(device)
         optimizer = getattr(optim, config['optimizer']['type'])(peft_model.parameters(), **config['optimizer']['params'])
@@ -105,6 +106,7 @@ def main(config, config_path):
             exp_name=config['exp_name'],
             config_path=config_path,
         )
+        
         # 모델 학습.
         trainer.train()
 
