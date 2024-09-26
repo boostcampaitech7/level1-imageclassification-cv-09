@@ -1,4 +1,4 @@
-exp_name: "ES3_ConvNeXt_base_4"
+exp_name: "ES3_ConvNeXt_base_lora"
 seed: 999
 traindata_dir: './data/train'
 testdata_dir: './data/test'
@@ -36,9 +36,9 @@ transform:
 
 device: 'cuda'
 
-  model_type: 'torchvision'
-  model_name: 'convnext_base'
-  pretrained: true
+model_type: 'torchvision'
+model_name: 'convnext_base'
+pretrained: true
 
 loss: 'SmoothingLoss'
 
@@ -48,8 +48,20 @@ lora:
     r: 8
     lora_alpha: 16
     lora_dropout: 0.1
-    target_modules: ["conv1", "conv2", "conv3", "fc"]
-    modules_to_save: ["fc"]
+    target_modules: [
+      "features.0.0", # 첫 번째 Conv2d 레이어
+      "features.1.block.0",
+      "features.1.block.3", # CNBlock의 첫 번째 Linear 레이어
+      "features.1.block.5", # CNBlock의 두 번째 Linear 레이어
+      "features.3.block.3",
+      "features.3.block.5",
+      "features.5.block.3",
+      "features.5.block.5",
+      "features.7.block.3",
+      "features.7.block.5",
+      "classifier.2" # 마지막 Linear 레이어
+      ]
+    modules_to_save: ["classifier.2"]
 
 optimizer:
   type: AdamW
