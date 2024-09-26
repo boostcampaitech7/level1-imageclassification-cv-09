@@ -75,7 +75,7 @@ class TimmModel(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         
         return self.model(x)
-    
+
 class HubModel(nn.Module):
     """
     Timm 라이브러리를 사용하여 다양한 사전 훈련된 모델을 제공하는 클래스.

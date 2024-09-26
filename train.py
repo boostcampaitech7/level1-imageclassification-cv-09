@@ -4,6 +4,7 @@ from data_loader.dataset import CustomDataset
 from data_loader.transform import TransformSelector
 from model.model import ModelSelector
 from model import loss
+import torch.nn as nn
 from trainer.trainer import Trainer, LoRATrainer
 import pandas as pd
 from torch.utils.data import DataLoader
@@ -70,19 +71,19 @@ def main(config, config_path):
     model = model_selector.get_model().to(device)
 
 
+    # peft, LoRA fine tuning
     if config.get('lora') and config['lora']['use']:
-            
-            # for name, module in [(n, type(m)) for n, m in model.named_modules()][100:]:
-            #     print(f"Name: {name}, Type: {module}")    
+        
+        # for name, module in [(n, type(m)) for n, m in model.named_modules()][100:]:
+        #     print(f"Name: {name}, Type: {module}")    
 
-            # print([(n, type(m)) for n, m in model.named_modules()][-10:])
-            # exit()
+        # print([(n, type(m)) for n, m in model.named_modules()][-10:])
+        # exit()
 
-            # target_classes = (torch.nn.modules.linear.Linear, torch.nn.modules.conv.Conv2d)
-            # target_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and not 'head' in name]
-            # save_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and 'head' in name]
+        # target_classes = (torch.nn.modules.linear.Linear, torch.nn.modules.conv.Conv2d)
+        # target_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and not 'head' in name]
+        # save_modules = [name for name, module in model.named_modules() if isinstance(module, target_classes) and 'head' in name]
 
-            
         lora_config = peft.LoraConfig(**config['lora']['params'])
         peft_model = peft.get_peft_model(model, lora_config).to(device)
         optimizer = getattr(optim, config['optimizer']['type'])(peft_model.parameters(), **config['optimizer']['params'])
@@ -91,20 +92,21 @@ def main(config, config_path):
 
         loss_fn = getattr(loss, config['loss'])()
 
-            # 앞서 선언한 필요 class와 변수들을 조합해, 학습을 진행할 Trainer를 선언. 
+        # 앞서 선언한 필요 class와 변수들을 조합해, 학습을 진행할 Trainer를 선언. 
         trainer = LoRATrainer(
-                model=peft_model, 
-                device=device, 
-                train_loader=train_loader,
-                val_loader=val_loader, 
-                optimizer=optimizer,
-                scheduler=scheduler,
-                loss_fn=loss_fn, 
-                epochs=config['num_epochs'],
-                result_path=train_result_path,
-                exp_name=config['exp_name'],
-                config_path=config_path,
-            )
+            model=peft_model, 
+            device=device, 
+            train_loader=train_loader,
+            val_loader=val_loader, 
+            optimizer=optimizer,
+            scheduler=scheduler,
+            loss_fn=loss_fn, 
+            epochs=config['num_epochs'],
+            result_path=train_result_path,
+            exp_name=config['exp_name'],
+            config_path=config_path,
+        )
+        
         # 모델 학습.
         trainer.train()
 
