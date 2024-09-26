@@ -1,6 +1,25 @@
-# Imagenet-Sketch Project
+# Imagenet-Sketch Classification Project
+- 2024.09.11 ~ 2024.09.26
+- 네이버 부스트캠프 기간 중 진행된 비공개 대회
 
-## Requirements
+
+## Dataset
+![initial](./img/imagenet_sketch.jpg)
+원본 ImageNet Sketch 데이터셋은 50,889개의 이미지 데이터로 구성되어 있으며 1,000개의 객체에 대해 각각 대략 50개씩의 이미지를 가지고 있습니다. 일반적인 객체들의 핸드 드로잉 이미지로 구성되어 있으며, 실제 객체를 대표하는 다양한 스타일과 특징을 보여줍니다. 
+
+이번 경진대회에서 제공되는 데이터셋은 원본데이터를 직접 검수하고 정제하여 1,000개의 클래스에서 정제 후 이미지 수량이 많은 상위 500개의 객체를 선정했으며 총 25,035개의 이미지 데이터가 활용됩니다. 해당 이미지 데이터는 15,021개의 학습데이터와 10,014개의 Private&Public 평가데이터로 나누어 구성되어있다.
+
+## Tools
+- Github
+- Slack
+- VS Code
+- Tensorboard
+
+## Experiments
+![initial](./img/experiments.png)
+
+
+## Installation
 1. Install the required Python packages by running the following command:
   <br/>It is highly recommended to use a virtual environment `venv`.
    ```bash
@@ -74,6 +93,9 @@ Modify the configurations in `.yaml` config files, then run:
   python train.py --config ./config/config.yaml
   ```
 
+
+
+
 ## How to test trained model?
 ### Test example
   ```
@@ -97,3 +119,33 @@ The script will save the results in the `test_result_path` directory (as specifi
 
 - For testing, the predictions will be saved in:
   - `test_output.csv`: Predictions for the test data.
+
+
+
+
+## Best Result
+Weighted soft ensembling using the following LoRA fine-tuned models and their weights.
+
+For more details, please refer to soft_ens.py
+```
+- Models:
+  caformer_b36.sail_in22k_ft_in1k
+  deit3_large_patch16_224.fb_in22k_ft_in1k
+  swin_large_patch4_window7_224.ms_in22k_ft_in1k
+  dinov2_vitl14_reg_lc
+  vit_large_patch14_clip_224.openai_ft_in1k
+  beitv2_large_patch16_224.in1k_ft_in22k_in1k
+
+- Weight: [1, 1, 1, 1, 1, 2]
+
+- Accuracy: 93.60%
+```
+
+## Sources we referred to and read
+- https://koreascience.kr/article/JAKO202421461791112.page
+- https://arxiv.org/pdf/1611.05431
+- https://arxiv.org/abs/2403.07203
+- https://arxiv.org/abs/2407.03893
+- https://www.kaggle.com/code/pedropordeus/imagenet-sketch
+- https://dacon.io/competitions/official/235697/codeshare/2373
+- https://arxiv.org/abs/2206.04548
