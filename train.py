@@ -5,7 +5,7 @@ from data_loader.transform import TransformSelector
 from model.model import ModelSelector
 from model import loss
 import torch.nn as nn
-from trainer.trainer import Trainer, LoRATrainer
+from trainer.trainer import Trainer, LoRATrainer, MPTrainer
 import pandas as pd
 from torch.utils.data import DataLoader
 from torch import optim
@@ -119,19 +119,35 @@ def main(config, config_path):
         loss_fn = getattr(loss, config['loss'])()
 
         # 앞서 선언한 필요 class와 변수들을 조합해, 학습을 진행할 Trainer를 선언. 
-        trainer = Trainer(
-            model=model, 
-            device=device, 
-            train_loader=train_loader,
-            val_loader=val_loader, 
-            optimizer=optimizer,
-            scheduler=scheduler,
-            loss_fn=loss_fn, 
-            epochs=config['num_epochs'],
-            result_path=train_result_path,
-            exp_name=config['exp_name'],
-            config_path=config_path,
-        )
+        if config['MPTrainer'].get() and config['MPTrainer']==True:
+            trainer = MPTrainer(
+                model=model, 
+                device=device, 
+                train_loader=train_loader,
+                val_loader=val_loader, 
+                optimizer=optimizer,
+                scheduler=scheduler,
+                loss_fn=loss_fn, 
+                epochs=config['num_epochs'],
+                result_path=train_result_path,
+                exp_name=config['exp_name'],
+                config_path=config_path,
+            )
+
+        else:
+            trainer = Trainer(
+                model=model, 
+                device=device, 
+                train_loader=train_loader,
+                val_loader=val_loader, 
+                optimizer=optimizer,
+                scheduler=scheduler,
+                loss_fn=loss_fn, 
+                epochs=config['num_epochs'],
+                result_path=train_result_path,
+                exp_name=config['exp_name'],
+                config_path=config_path,
+            )
         # 모델 학습.
         trainer.train()
 
