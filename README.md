@@ -29,7 +29,7 @@
     ```bash
     bash download_sketch_dataset.sh
     ```
-## Usage
+## Training
 ### Config file format
 Config files are in `.yaml` format:
 ```yaml
@@ -45,7 +45,7 @@ train_result_path: './train_result'
 test_result_path: './output'
 
 transform:
-  transform_type: albumentations
+  transform_type: albumentations # rand_augment, auto_augment
   augmentations:
     - type: HorizontalFlip
       params:
@@ -68,6 +68,16 @@ pretrained: true
 
 loss: 'CELoss'
 
+# lora:
+#   use: true
+#   params:
+#     r: 8
+#     lora_alpha: 16
+#     lora_dropout: 0.1
+#     target_modules: '.*(attn.qkv|attn.proj|mlp.fc\d)'
+#     modules_to_save: ["head"]
+
+
 optimizer:
   type: Adam
   params:
@@ -79,6 +89,7 @@ scheduler:
     step_size: 376
     gamma: 0.1
 
+# MPTrainer: true
 num_epochs: 5
 batch_size: 64
 
@@ -96,7 +107,7 @@ Modify the configurations in `.yaml` config files, then run:
 
 
 
-## How to test trained model?
+## Testing
 ### Test example
   ```
   # Output will be saved in ./{test_result_path}/{exp_name}/
@@ -109,6 +120,11 @@ Modify the configurations in `.yaml` config files, then run:
   # all
   python test.py --config ./config/config.yaml --all
   ```
+
+### Ensemble test
+```
+python ./soft_ens.py # test only
+```
 
 ### Test output
 The script will save the results in the `test_result_path` directory (as specified in the config).
