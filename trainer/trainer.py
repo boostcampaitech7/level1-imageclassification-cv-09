@@ -131,15 +131,6 @@ class MPTrainer:
             self.save_model(epoch, val_loss)
             self.scheduler.step()
 
-            # ES, 조기 종료 검사
-            if self.best_loss - val_loss > self.min_delta:
-                self.best_loss = val_loss
-                self.counter = 0
-            else:
-                self.counter += 1
-                if self.counter >= self.patience:
-                    print(f"조기 종료: {self.patience}epoch 동안 성능 향상 X.")
-                    break
         
 
         # 훈련 완료 후 SummaryWriter 종료
