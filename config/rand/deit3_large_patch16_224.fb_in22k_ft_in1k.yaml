@@ -1,0 +1,50 @@
+exp_name: "deit3_large_patch16_224.fb_in22k_ft_in1k"
+seed: 999
+traindata_dir: './data/train'
+testdata_dir: './data/test'
+
+traindata_info_file: './data/train.csv'
+testdata_info_file: './data/test.csv'
+
+train_result_path: './train_result'
+test_result_path: './output'
+
+transform:
+  transform_type: randaugment
+  augmentations:
+
+
+device: 'cuda'
+
+model_type: 'timm'
+model_name: 'deit3_large_patch16_224.fb_in22k_ft_in1k'
+pretrained: true
+
+loss: 'SmoothingLoss'
+
+lora:
+  use: true
+  params:
+    r: 8
+    lora_alpha: 16
+    lora_dropout: 0.1
+    target_modules: '.*(attn.qkv|attn.proj|mlp.fc\d)'
+    modules_to_save: ["head"]
+
+optimizer:
+  type: AdamW
+  params:
+    lr: 0.001
+    betas: [0.9, 0.999]
+    eps: 1.0e-8
+    amsgrad: False
+
+
+scheduler:
+  type: CosineAnnealingLR
+  params:
+    T_max: 20
+    eta_min: 0.000001
+
+num_epochs: 10
+batch_size: 64
